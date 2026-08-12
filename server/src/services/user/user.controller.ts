@@ -1,0 +1,48 @@
+import type { Response } from "express";
+
+import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+import { ApiResponse } from "../../lib/apiResponse.js";
+import { catchAsync } from "../../lib/catchAsync.js";
+import { userService } from "./user.service.js";
+
+const getMe = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
+  const user = await userService.getUserById(req.user!.userId);
+
+  res.status(200).json(new ApiResponse("User retrieved successfully", user));
+});
+
+const updateMe = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const user = await userService.updateUser(req.user!.userId, req.body);
+
+    res.status(200).json(new ApiResponse("User updated successfully", user));
+  },
+);
+
+const deleteMe = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    await userService.deleteUser(req.user!.userId);
+
+    res.status(200).json(new ApiResponse("User deleted successfully", null));
+  },
+);
+
+const getUsers = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const page = Number(req.query.page);
+    const limit = Number(req.query.limit);
+
+    const result = await userService.getUsers(page, limit);
+
+    res
+      .status(200)
+      .json(new ApiResponse("Users retrieved successfully", result));
+  },
+);
+
+export const userController = {
+  getMe,
+  updateMe,
+  deleteMe,
+  getUsers,
+};
