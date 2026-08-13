@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+
 import { api } from "@/lib/api";
 
 interface Service {
@@ -17,18 +18,50 @@ interface Service {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+
   category?: {
     id: string;
     name: string;
     slug: string;
     description?: string | null;
   };
+
   provider?: {
     id: string;
     name: string;
     email: string;
     phone?: string | null;
   };
+}
+
+interface Review {
+  id: string;
+  bookingId: string;
+  serviceId: string;
+  userId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+
+  user?: {
+    id: string;
+    name: string;
+  };
+}
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={star <= rating ? "text-yellow-400" : "text-slate-700"}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
 }
 
 export default function ServiceDetailsPage() {
@@ -38,8 +71,13 @@ export default function ServiceDetailsPage() {
   const serviceId = params.id as string;
 
   const [service, setService] = useState<Service | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
   const [error, setError] = useState("");
+  const [reviewsError, setReviewsError] = useState("");
 
   useEffect(() => {
     if (!serviceId) return;
@@ -53,18 +91,44 @@ export default function ServiceDetailsPage() {
 
         setService(result);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load service");
+        setError(
+          err instanceof Error ? err.message : "Failed to load service.",
+        );
       } finally {
         setLoading(false);
       }
     };
 
+    const fetchReviews = async () => {
+      try {
+        setReviewsLoading(true);
+        setReviewsError("");
+
+        const result = await api.get<Review[]>(`/reviews/service/${serviceId}`);
+
+        setReviews(Array.isArray(result) ? result : []);
+      } catch (err) {
+        setReviewsError(
+          err instanceof Error ? err.message : "Failed to load reviews.",
+        );
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
     fetchService();
+    fetchReviews();
   }, [serviceId]);
 
   const handleBooking = () => {
     router.push(`/bookings?serviceId=${serviceId}`);
   };
+
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((total, review) => total + review.rating, 0) /
+        reviews.length
+      : 0;
 
   if (loading) {
     return (
@@ -121,7 +185,7 @@ export default function ServiceDetailsPage() {
           ← Back to Services
         </Link>
 
-        {/* Main Card */}
+        {/* Main Service Card */}
         <div className="mt-8 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
           <div className="p-8 md:p-10">
             {/* Category */}
@@ -199,6 +263,99 @@ export default function ServiceDetailsPage() {
             </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <section className="mt-10">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <h2 className="text-3xl font-bold">Customer Reviews</h2>
+
+              <p className="mt-2 text-slate-400">
+                See what customers think about this service.
+              </p>
+            </div>
+
+            {reviews.length > 0 && (
+              <div className="rounded-xl border border-slate-800 bg-slate-900 px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl font-bold">
+                    {averageRating.toFixed(1)}
+                  </span>
+
+                  <div>
+                    <StarRating rating={Math.round(averageRating)} />
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {reviews.length}{" "}
+                      {reviews.length === 1 ? "review" : "reviews"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Reviews Error */}
+          {reviewsError && (
+            <div className="mt-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
+              {reviewsError}
+            </div>
+          )}
+
+          {/* Loading */}
+          {reviewsLoading && (
+            <div className="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-8 text-center">
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-slate-700 border-t-cyan-400" />
+
+              <p className="text-slate-400">Loading reviews...</p>
+            </div>
+          )}
+
+          {/* Empty */}
+          {!reviewsLoading && !reviewsError && reviews.length === 0 && (
+            <div className="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-8 text-center">
+              <p className="text-lg font-medium">No reviews yet</p>
+
+              <p className="mt-2 text-slate-500">
+                Be the first customer to review this service.
+              </p>
+            </div>
+          )}
+
+          {/* Review List */}
+          {!reviewsLoading && reviews.length > 0 && (
+            <div className="mt-8 space-y-4">
+              {reviews.map((review) => (
+                <article
+                  key={review.id}
+                  className="rounded-xl border border-slate-800 bg-slate-900 p-6"
+                >
+                  <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                    <div>
+                      <h3 className="font-semibold">
+                        {review.user?.name ?? "Customer"}
+                      </h3>
+
+                      <div className="mt-2">
+                        <StarRating rating={review.rating} />
+                      </div>
+                    </div>
+
+                    <time className="text-sm text-slate-500">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </time>
+                  </div>
+
+                  {review.comment && (
+                    <p className="mt-5 leading-7 text-slate-400">
+                      {review.comment}
+                    </p>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );

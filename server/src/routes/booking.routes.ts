@@ -14,6 +14,7 @@ const router = Router();
 
 router.use(authenticate);
 
+// Create a booking
 router.post(
   "/",
   authorize("CUSTOMER"),
@@ -23,10 +24,13 @@ router.post(
   bookingController.createBooking,
 );
 
+// Get current customer's bookings
 router.get("/my", authorize("CUSTOMER"), bookingController.getMyBookings);
 
+// Get a single booking
 router.get("/:id", bookingController.getBookingById);
 
+// Update booking status
 router.patch(
   "/:id/status",
   validateRequest({
@@ -35,6 +39,7 @@ router.patch(
   bookingController.updateBookingStatus,
 );
 
+// Cancel booking
 router.patch(
   "/:id/cancel",
   authorize("CUSTOMER"),

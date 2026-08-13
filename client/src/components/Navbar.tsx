@@ -1,61 +1,80 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
-  const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem("token"));
+  }, []);
 
-  const logout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/login");
+    setToken(null);
   };
 
   return (
     <header className="border-b border-slate-800 bg-slate-950">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-bold text-white">
+        <Link href="/" className="text-xl font-bold text-cyan-400">
           ServiceHub
         </Link>
 
-        <div className="flex items-center gap-6 text-sm">
-          <Link href="/services" className="text-slate-300 hover:text-white">
+        <div className="flex items-center gap-6">
+          <Link
+            href="/services"
+            className="text-slate-300 transition hover:text-white"
+          >
             Services
           </Link>
 
-          {token ? (
+          {mounted && token ? (
             <>
               <Link
                 href="/bookings"
-                className="text-slate-300 hover:text-white"
+                className="text-slate-300 transition hover:text-white"
               >
                 My Bookings
               </Link>
 
+              <Link
+                href="/profile"
+                className="text-slate-300 transition hover:text-white"
+              >
+                Profile
+              </Link>
+
               <button
-                onClick={logout}
-                className="rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20"
               >
                 Logout
               </button>
             </>
-          ) : (
+          ) : mounted ? (
             <>
-              <Link href="/login" className="text-slate-300 hover:text-white">
+              <Link
+                href="/login"
+                className="text-slate-300 transition hover:text-white"
+              >
                 Login
               </Link>
 
               <Link
                 href="/register"
-                className="rounded-lg bg-violet-600 px-4 py-2 text-white hover:bg-violet-700"
+                className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
               >
                 Register
               </Link>
             </>
+          ) : (
+            // Keep server and initial client render identical.
+            <div className="h-9 w-32" />
           )}
         </div>
       </nav>

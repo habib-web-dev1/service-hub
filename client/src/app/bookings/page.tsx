@@ -3,6 +3,7 @@
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+
 import { api } from "@/lib/api";
 
 interface Service {
@@ -19,6 +20,7 @@ interface Booking {
   status: string;
   scheduledAt: string;
   notes: string | null;
+  service?: Service;
 }
 
 function BookingForm() {
@@ -33,12 +35,12 @@ function BookingForm() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (!serviceId) {
-      setError("No service selected.");
       setLoading(false);
       return;
     }
@@ -102,11 +104,7 @@ function BookingForm() {
   };
 
   if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-        <p className="text-slate-400">Loading booking page...</p>
-      </main>
-    );
+    return <BookingLoading />;
   }
 
   return (
@@ -212,22 +210,186 @@ function BookingForm() {
   );
 }
 
+function MyBookings() {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const result = await api.get<Booking[]>("/bookings/my");
+
+        setBookings(Array.isArray(result) ? result : []);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load bookings.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookings();
+  }, []);
+
+  if (loading) {
+    return <BookingLoading />;
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-bold">My Bookings</h1>
+
+            <p className="mt-2 text-slate-400">
+              View and manage your service bookings.
+            </p>
+          </div>
+
+          <Link
+            href="/services"
+            className="rounded-lg bg-cyan-500 px-5 py-3 text-center font-semibold text-slate-950 transition hover:bg-cyan-400"
+          >
+            Browse Services
+          </Link>
+        </div>
+
+        {error && (
+          <div className="mt-8 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
+            {error}
+          </div>
+        )}
+
+        {!error && bookings.length === 0 && (
+          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
+            <h2 className="text-xl font-semibold">No bookings yet</h2>
+
+            <p className="mt-2 text-slate-400">
+              You haven't booked any services yet.
+            </p>
+
+            <Link
+              href="/services"
+              className="mt-6 inline-block rounded-lg bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
+            >
+              Find a Service
+            </Link>
+          </div>
+        )}
+
+        {bookings.length > 0 && (
+          <div className="mt-8 space-y-4">
+            {bookings.map((booking) => (
+              <div
+                key={booking.id}
+                className="rounded-2xl border border-slate-800 bg-slate-900 p-6"
+              >
+                <div className="flex flex-col justify-between gap-4 sm:flex-row">
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      {booking.service?.title ?? "Service Booking"}
+                    </h2>
+
+                    <p className="mt-2 text-sm text-slate-400">
+                      Booking ID: {booking.id}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`h-fit rounded-full px-3 py-1 text-sm font-medium ${
+                      booking.status === "CONFIRMED"
+                        ? "bg-green-500/10 text-green-400"
+                        : booking.status === "CANCELLED"
+                          ? "bg-red-500/10 text-red-400"
+                          : booking.status === "COMPLETED"
+                            ? "bg-blue-500/10 text-blue-400"
+                            : "bg-yellow-500/10 text-yellow-400"
+                    }`}
+                  >
+                    {booking.status}
+                  </span>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <p className="text-sm text-slate-500">Scheduled</p>
+
+                    <p className="mt-1 text-slate-200">
+                      {new Date(booking.scheduledAt).toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-500">Price</p>
+
+                    <p className="mt-1 text-cyan-400">
+                      {booking.service
+                        ? `$${Number(booking.service.price).toFixed(2)}`
+                        : "—"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-slate-500">Duration</p>
+
+                    <p className="mt-1 text-slate-200">
+                      {booking.service?.duration
+                        ? `${booking.service.duration} min`
+                        : "Flexible"}
+                    </p>
+                  </div>
+                </div>
+
+                {booking.notes && (
+                  <div className="mt-6 border-t border-slate-800 pt-4">
+                    <p className="text-sm text-slate-500">Notes</p>
+
+                    <p className="mt-1 text-slate-300">{booking.notes}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
 function BookingLoading() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
       <div className="text-center">
         <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-cyan-400" />
 
-        <p className="text-slate-400">Loading booking page...</p>
+        <p className="text-slate-400">Loading bookings...</p>
       </div>
     </main>
   );
 }
 
+function BookingPageContent() {
+  const searchParams = useSearchParams();
+
+  const serviceId = searchParams.get("serviceId");
+
+  if (serviceId) {
+    return <BookingForm />;
+  }
+
+  return <MyBookings />;
+}
+
 export default function BookingsPage() {
   return (
     <Suspense fallback={<BookingLoading />}>
-      <BookingForm />
+      <BookingPageContent />
     </Suspense>
   );
 }
