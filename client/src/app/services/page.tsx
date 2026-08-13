@@ -64,7 +64,6 @@ export default function ServicesPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
         <div className="mb-10">
           <Link
             href="/"
@@ -82,7 +81,6 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        {/* Loading */}
         {loading && (
           <div className="flex min-h-[300px] items-center justify-center">
             <div className="text-center">
@@ -93,7 +91,6 @@ export default function ServicesPage() {
           </div>
         )}
 
-        {/* Error */}
         {!loading && error && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6">
             <h2 className="text-lg font-semibold text-red-400">
@@ -111,7 +108,6 @@ export default function ServicesPage() {
           </div>
         )}
 
-        {/* Empty */}
         {!loading && !error && services.length === 0 && (
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-10 text-center">
             <h2 className="text-xl font-semibold">No services available</h2>
@@ -122,7 +118,6 @@ export default function ServicesPage() {
           </div>
         )}
 
-        {/* Services */}
         {!loading && !error && services.length > 0 && (
           <>
             <div className="mb-6 flex items-center justify-between">
@@ -138,22 +133,18 @@ export default function ServicesPage() {
                   key={service.id}
                   className="flex flex-col rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-lg transition duration-200 hover:-translate-y-1 hover:border-cyan-500/50"
                 >
-                  {/* Category */}
                   {service.category && (
                     <span className="mb-4 w-fit rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-400">
                       {service.category.name}
                     </span>
                   )}
 
-                  {/* Title */}
                   <h2 className="text-xl font-semibold">{service.title}</h2>
 
-                  {/* Description */}
                   <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">
                     {service.description}
                   </p>
 
-                  {/* Price */}
                   <div className="mt-6">
                     <span className="text-2xl font-bold text-cyan-400">
                       ${Number(service.price).toFixed(2)}
