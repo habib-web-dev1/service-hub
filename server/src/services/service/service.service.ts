@@ -108,32 +108,104 @@ const getServiceById = async (id: string) => {
   }
   return service;
 };
-const updateService = async (id: string, data: UpdateServiceInput) => {
-  await getServiceById(id);
+const updateService = async (
+  id: string,
+  providerId: string,
+  data: UpdateServiceInput,
+) => {
+  const service = await prisma.service.findFirst({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+
+  if (!service) {
+    throw new ApiError(404, "Service not found");
+  }
+
+  if (service.providerId !== providerId) {
+    throw new ApiError(
+      403,
+      "You do not have permission to update this service",
+    );
+  }
+
   if (data.categoryId) {
     await ensureCategoryExists(data.categoryId);
   }
+
   return prisma.service.update({
-    where: { id },
+    where: {
+      id,
+    },
     data: {
-      ...(data.title !== undefined && { title: data.title }),
-      ...(data.description !== undefined && { description: data.description }),
-      ...(data.price !== undefined && { price: data.price }),
-      ...(data.duration !== undefined && { duration: data.duration }),
-      ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
-      ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.title !== undefined && {
+        title: data.title,
+      }),
+
+      ...(data.description !== undefined && {
+        description: data.description,
+      }),
+
+      ...(data.price !== undefined && {
+        price: data.price,
+      }),
+
+      ...(data.duration !== undefined && {
+        duration: data.duration,
+      }),
+
+      ...(data.categoryId !== undefined && {
+        categoryId: data.categoryId,
+      }),
+
+      ...(data.isActive !== undefined && {
+        isActive: data.isActive,
+      }),
     },
     include: {
       category: true,
-      provider: { select: { id: true, name: true, email: true, phone: true } },
+      provider: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
     },
   });
 };
-const deleteService = async (id: string) => {
-  await getServiceById(id);
+
+const deleteService = async (id: string, providerId: string) => {
+  const service = await prisma.service.findFirst({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+
+  if (!service) {
+    throw new ApiError(404, "Service not found");
+  }
+
+  if (service.providerId !== providerId) {
+    throw new ApiError(
+      403,
+      "You do not have permission to delete this service",
+    );
+  }
+
   return prisma.service.update({
-    where: { id },
-    data: { isDeleted: true, deletedAt: new Date(), isActive: false },
+    where: {
+      id,
+    },
+    data: {
+      isDeleted: true,
+      deletedAt: new Date(),
+      isActive: false,
+    },
   });
 };
 export const serviceService = {
