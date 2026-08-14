@@ -5,6 +5,7 @@ import { catchAsync } from "../../lib/catchAsync.js";
 import { ApiError } from "../../lib/apiError.js";
 import { serviceService } from "./service.service.js";
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
+
 const createService = catchAsync(async (req: Request, res: Response) => {
   const service = await serviceService.createService(req.body);
 
@@ -72,10 +73,26 @@ const deleteService = catchAsync(
     res.status(200).json(new ApiResponse("Service deleted successfully", null));
   },
 );
+const getMyServices = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 10);
 
+    const result = await serviceService.getMyServices(
+      req.user!.userId,
+      page,
+      limit,
+    );
+
+    res
+      .status(200)
+      .json(new ApiResponse("Your services retrieved successfully", result));
+  },
+);
 export const serviceController = {
   createService,
   getServices,
+  getMyServices,
   getServiceById,
   updateService,
   deleteService,

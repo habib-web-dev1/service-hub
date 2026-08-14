@@ -3,6 +3,7 @@ import { Router } from "express";
 import { authenticate } from "../middlewares/auth.middleware.js";
 import { authorize } from "../middlewares/role.middleware.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
+
 import { serviceController } from "../services/service/service.controller.js";
 import {
   createServiceSchema,
@@ -28,6 +29,13 @@ router.get(
     query: serviceQuerySchema,
   }),
   serviceController.getServices,
+);
+
+router.get(
+  "/my",
+  authenticate,
+  authorize("PROVIDER"),
+  serviceController.getMyServices,
 );
 
 router.get("/:id", serviceController.getServiceById);

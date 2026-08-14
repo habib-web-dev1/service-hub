@@ -208,6 +208,55 @@ const deleteService = async (id: string, providerId: string) => {
     },
   });
 };
+const getMyServices = async (providerId: string, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  const where = {
+    providerId,
+    isDeleted: false,
+  };
+
+  const [services, total] = await Promise.all([
+    prisma.service.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        provider: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    }),
+
+    prisma.service.count({
+      where,
+    }),
+  ]);
+
+  return {
+    data: services,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
 export const serviceService = {
   createService,
   getServices,
