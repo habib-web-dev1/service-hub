@@ -135,9 +135,41 @@ const getUsers = async (page: number, limit: number) => {
   };
 };
 
+const becomeProvider = async (userId: string) => {
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      id: userId,
+      isDeleted: false,
+    },
+  });
+
+  if (!existingUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      role: "PROVIDER",
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
 export const userService = {
   getUserById,
   updateUser,
   deleteUser,
+  becomeProvider,
   getUsers,
 };

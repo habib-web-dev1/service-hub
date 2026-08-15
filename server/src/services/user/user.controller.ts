@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 
 import type { AuthenticatedRequest } from "../../middlewares/auth.middleware.js";
 import { ApiResponse } from "../../lib/apiResponse.js";
@@ -27,6 +27,14 @@ const deleteMe = catchAsync(
   },
 );
 
+const becomeProvider = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const user = await userService.becomeProvider(req.user!.userId);
+
+    res.status(200).json(new ApiResponse("User upgraded to provider successfully", user));
+  },
+);
+
 const getUsers = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const page = Number(req.query.page);
@@ -40,9 +48,20 @@ const getUsers = catchAsync(
   },
 );
 
+const deleteUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = String(req.params.id);
+    await userService.deleteUser(id);
+
+    res.status(200).json(new ApiResponse("User deleted successfully", null));
+  },
+);
+
 export const userController = {
   getMe,
   updateMe,
   deleteMe,
+  becomeProvider,
   getUsers,
+  deleteUser,
 };

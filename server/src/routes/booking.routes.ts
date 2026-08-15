@@ -14,6 +14,9 @@ const router = Router();
 
 router.use(authenticate);
 
+// Admin: get all bookings
+router.get("/", authorize("ADMIN"), bookingController.getAllBookings);
+
 // Create a booking
 router.post(
   "/",

@@ -25,6 +25,9 @@ router.patch(
   userController.updateMe,
 );
 
+// Become a provider
+router.post("/me/become-provider", authenticate, userController.becomeProvider);
+
 // Delete current logged-in user
 router.delete("/me", authenticate, userController.deleteMe);
 
@@ -37,6 +40,14 @@ router.get(
     query: userQuerySchema,
   }),
   userController.getUsers,
+);
+
+// Admin: delete user
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("ADMIN"),
+  userController.deleteUser,
 );
 
 export default router;

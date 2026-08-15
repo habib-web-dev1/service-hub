@@ -9,10 +9,14 @@ import {
   updateCategorySchema,
 } from "../services/category/category.validation.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
+import { authorize } from "../middlewares/role.middleware.js";
+
 const router = Router();
 
 router.post(
   "/",
+  authenticate,
+  authorize("ADMIN"),
   validateRequest({
     body: createCategorySchema,
   }),
@@ -21,18 +25,30 @@ router.post(
 
 router.get("/", categoryController.getCategories);
 
-router.patch("/:id/restore", categoryController.restoreCategory);
+router.patch(
+  "/:id/restore",
+  authenticate,
+  authorize("ADMIN"),
+  categoryController.restoreCategory,
+);
 
 router.get("/:id", authenticate, categoryController.getCategoryById);
 
 router.patch(
   "/:id",
+  authenticate,
+  authorize("ADMIN"),
   validateRequest({
     body: updateCategorySchema,
   }),
   categoryController.updateCategory,
 );
 
-router.delete("/:id", categoryController.deleteCategory);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("ADMIN"),
+  categoryController.deleteCategory,
+);
 
 export default router;

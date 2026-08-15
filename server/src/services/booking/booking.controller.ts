@@ -87,10 +87,24 @@ const getProviderBookings = catchAsync(
   },
 );
 
+const getAllBookings = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 1000; // default large limit or simple pagination
+
+    const result = await bookingService.getAllBookings(page, limit);
+
+    res
+      .status(200)
+      .json(new ApiResponse("All bookings retrieved successfully", result));
+  },
+);
+
 export const bookingController = {
   createBooking,
   getMyBookings,
   getProviderBookings,
+  getAllBookings,
   getBookingById,
   updateBookingStatus,
   cancelBooking,

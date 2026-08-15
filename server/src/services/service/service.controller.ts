@@ -52,6 +52,7 @@ const updateService = catchAsync(
     const service = await serviceService.updateService(
       id,
       req.user!.userId,
+      req.user!.role,
       req.body,
     );
 
@@ -68,7 +69,7 @@ const deleteService = catchAsync(
       throw new ApiError(400, "Invalid service ID");
     }
 
-    await serviceService.deleteService(id, req.user!.userId);
+    await serviceService.deleteService(id, req.user!.userId, req.user!.role);
 
     res.status(200).json(new ApiResponse("Service deleted successfully", null));
   },

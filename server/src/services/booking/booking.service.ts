@@ -221,10 +221,65 @@ const getProviderBookings = async (providerId: string) => {
   });
 };
 
+const getAllBookings = async (page: number, limit: number) => {
+  const skip = (page - 1) * limit;
+
+  const [bookings, total] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        isDeleted: false,
+      },
+      skip,
+      take: limit,
+      include: {
+        service: {
+          include: {
+            category: true,
+            provider: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        isDeleted: false,
+      },
+    }),
+  ]);
+
+  return {
+    data: bookings,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 export const bookingService = {
   createBooking,
   getMyBookings,
   getProviderBookings,
+  getAllBookings,
   getBookingById,
   updateBookingStatus,
   cancelBooking,

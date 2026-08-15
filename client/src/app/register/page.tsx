@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { User, Briefcase } from "lucide-react";
 
 interface RegisterResponse {
   user: {
@@ -11,7 +12,7 @@ interface RegisterResponse {
     name: string;
     email: string;
     phone: string | null;
-    role: string;
+    role: "CUSTOMER" | "PROVIDER";
   };
   token: string;
 }
@@ -23,6 +24,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"CUSTOMER" | "PROVIDER">("CUSTOMER");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,13 +41,18 @@ export default function RegisterPage() {
         email,
         password,
         phone: phone || null,
-        role: "CUSTOMER",
+        role,
       });
 
       localStorage.setItem("token", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
 
-      router.push("/services");
+      // Redirect based on role
+      if (result.user.role === "PROVIDER") {
+        router.push("/provider");
+      } else {
+        router.push("/services");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");
     } finally {
@@ -55,12 +62,11 @@ export default function RegisterPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-xl">
+      <div className="w-full max-w-lg">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 shadow-xl backdrop-blur-md">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold">Create Account</h1>
-
-            <p className="mt-2 text-slate-400">Join ServiceHub today</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Create Account</h1>
+            <p className="mt-2 text-slate-400">Join ServiceHub today as a client or partner</p>
           </div>
 
           {error && (
@@ -70,6 +76,42 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Role Selection */}
+            <div>
+              <label className="mb-3 block text-sm font-medium text-slate-300">
+                Choose Account Type
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setRole("CUSTOMER")}
+                  className={`flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all duration-200 cursor-pointer ${
+                    role === "CUSTOMER"
+                      ? "border-cyan-400 bg-cyan-950/20 text-cyan-400 shadow-md shadow-cyan-500/5"
+                      : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-white"
+                  }`}
+                >
+                  <User className="h-6 w-6 mb-2" />
+                  <span className="text-sm font-semibold">Customer</span>
+                  <span className="text-xs text-slate-500 mt-1">I want to hire services</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRole("PROVIDER")}
+                  className={`flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all duration-200 cursor-pointer ${
+                    role === "PROVIDER"
+                      ? "border-blue-400 bg-blue-950/20 text-blue-400 shadow-md shadow-blue-500/5"
+                      : "border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-white"
+                  }`}
+                >
+                  <Briefcase className="h-6 w-6 mb-2" />
+                  <span className="text-sm font-semibold">Service Provider</span>
+                  <span className="text-xs text-slate-500 mt-1">I want to offer services</span>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label
                 htmlFor="name"
@@ -150,7 +192,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 font-semibold text-slate-950 transition hover:opacity-95 hover:shadow-lg hover:shadow-cyan-500/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>

@@ -257,6 +257,7 @@ const getServiceById = async (id: string) => {
 const updateService = async (
   id: string,
   providerId: string,
+  role: string,
   data: UpdateServiceInput,
 ) => {
   const service = await prisma.service.findFirst({
@@ -270,7 +271,7 @@ const updateService = async (
     throw new ApiError(404, "Service not found");
   }
 
-  if (service.providerId !== providerId) {
+  if (service.providerId !== providerId && role !== "ADMIN") {
     throw new ApiError(
       403,
       "You do not have permission to update this service",
@@ -327,7 +328,7 @@ const updateService = async (
   });
 };
 
-const deleteService = async (id: string, providerId: string) => {
+const deleteService = async (id: string, providerId: string, role: string) => {
   const service = await prisma.service.findFirst({
     where: {
       id,
@@ -339,7 +340,7 @@ const deleteService = async (id: string, providerId: string) => {
     throw new ApiError(404, "Service not found");
   }
 
-  if (service.providerId !== providerId) {
+  if (service.providerId !== providerId && role !== "ADMIN") {
     throw new ApiError(
       403,
       "You do not have permission to delete this service",
