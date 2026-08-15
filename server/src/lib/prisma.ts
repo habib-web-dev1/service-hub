@@ -16,6 +16,7 @@ const pool =
   new Pool({
     connectionString: env.DATABASE_URL,
     max: 1, // keep connections low for serverless
+    ssl: env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
   });
 
 const adapter = new PrismaPg(pool);
