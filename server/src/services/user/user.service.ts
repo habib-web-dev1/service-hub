@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "../../lib/apiError.js";
+import { bcryptUtils } from "../../lib/bcrypt.js";
 
 const getUserById = async (userId: string) => {
   const user = await prisma.user.findFirst({
@@ -166,10 +167,42 @@ const becomeProvider = async (userId: string) => {
   });
 };
 
+const changePassword = async (
+  userId: string,
+  data: { currentPassword: string; newPassword: string },
+) => {
+  const user = await prisma.user.findFirst({
+    where: { id: userId, isDeleted: false },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isMatch = await bcryptUtils.comparePassword(
+    data.currentPassword,
+    user.password,
+  );
+
+  if (!isMatch) {
+    throw new ApiError(400, "Current password is incorrect");
+  }
+
+  const hashed = await bcryptUtils.hashPassword(data.newPassword);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashed },
+  });
+
+  return null;
+};
+
 export const userService = {
   getUserById,
   updateUser,
   deleteUser,
   becomeProvider,
   getUsers,
+  changePassword,
 };

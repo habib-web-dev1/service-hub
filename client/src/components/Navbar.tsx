@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Calendar, ClipboardList, User, LogOut, ShieldAlert } from "lucide-react";
+import {
+  LayoutDashboard,
+  Calendar,
+  ClipboardList,
+  User,
+  LogOut,
+  ShieldAlert,
+} from "lucide-react";
+import { logout as authLogout } from "@/lib/auth";
 
 interface UserInfo {
   id: string;
@@ -22,7 +30,7 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
     setToken(localStorage.getItem("token"));
-    
+
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -36,8 +44,7 @@ export default function Navbar() {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    authLogout();
     setToken(null);
     setUser(null);
     router.push("/login");
@@ -46,7 +53,10 @@ export default function Navbar() {
   return (
     <header className="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent hover:opacity-90">
+        <Link
+          href="/"
+          className="text-xl font-bold bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent hover:opacity-90"
+        >
           ServiceHub
         </Link>
 
@@ -54,7 +64,9 @@ export default function Navbar() {
           <Link
             href="/services"
             className={`text-sm font-medium transition ${
-              pathname === "/services" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+              pathname === "/services"
+                ? "text-cyan-400"
+                : "text-slate-300 hover:text-white"
             }`}
           >
             Services
@@ -67,7 +79,9 @@ export default function Navbar() {
                 <Link
                   href="/bookings"
                   className={`flex items-center gap-1 text-sm font-medium transition ${
-                    pathname === "/bookings" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+                    pathname === "/bookings"
+                      ? "text-cyan-400"
+                      : "text-slate-300 hover:text-white"
                   }`}
                 >
                   <Calendar className="h-4 w-4" />
@@ -81,7 +95,9 @@ export default function Navbar() {
                   <Link
                     href="/provider"
                     className={`flex items-center gap-1 text-sm font-medium transition ${
-                      pathname === "/provider" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+                      pathname === "/provider"
+                        ? "text-cyan-400"
+                        : "text-slate-300 hover:text-white"
                     }`}
                   >
                     <LayoutDashboard className="h-4 w-4" />
@@ -91,7 +107,9 @@ export default function Navbar() {
                   <Link
                     href="/provider/bookings"
                     className={`flex items-center gap-1 text-sm font-medium transition ${
-                      pathname === "/provider/bookings" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+                      pathname === "/provider/bookings"
+                        ? "text-cyan-400"
+                        : "text-slate-300 hover:text-white"
                     }`}
                   >
                     <ClipboardList className="h-4 w-4" />
@@ -105,7 +123,9 @@ export default function Navbar() {
                 <Link
                   href="/admin"
                   className={`flex items-center gap-1 text-sm font-medium transition ${
-                    pathname === "/admin" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+                    pathname === "/admin"
+                      ? "text-cyan-400"
+                      : "text-slate-300 hover:text-white"
                   }`}
                 >
                   <ShieldAlert className="h-4 w-4 text-cyan-400 animate-pulse" />
@@ -116,7 +136,9 @@ export default function Navbar() {
               <Link
                 href="/profile"
                 className={`flex items-center gap-1 text-sm font-medium transition ${
-                  pathname === "/profile" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+                  pathname === "/profile"
+                    ? "text-cyan-400"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 <User className="h-4 w-4" />
@@ -137,7 +159,9 @@ export default function Navbar() {
               <Link
                 href="/login"
                 className={`text-sm font-medium transition ${
-                  pathname === "/login" ? "text-cyan-400" : "text-slate-300 hover:text-white"
+                  pathname === "/login"
+                    ? "text-cyan-400"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 Login
@@ -145,7 +169,7 @@ export default function Navbar() {
 
               <Link
                 href="/register"
-                className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-95 hover:shadow-md cursor-pointer"
+                className="rounded-lg bg-linear-to-r from-cyan-500 to-blue-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-95 hover:shadow-md cursor-pointer"
               >
                 Register
               </Link>

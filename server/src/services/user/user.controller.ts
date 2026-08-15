@@ -31,7 +31,9 @@ const becomeProvider = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const user = await userService.becomeProvider(req.user!.userId);
 
-    res.status(200).json(new ApiResponse("User upgraded to provider successfully", user));
+    res
+      .status(200)
+      .json(new ApiResponse("User upgraded to provider successfully", user));
   },
 );
 
@@ -48,12 +50,20 @@ const getUsers = catchAsync(
   },
 );
 
-const deleteUser = catchAsync(
-  async (req: Request, res: Response) => {
-    const id = String(req.params.id);
-    await userService.deleteUser(id);
+const deleteUser = catchAsync(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+  await userService.deleteUser(id);
 
-    res.status(200).json(new ApiResponse("User deleted successfully", null));
+  res.status(200).json(new ApiResponse("User deleted successfully", null));
+});
+
+const changePassword = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    await userService.changePassword(req.user!.userId, req.body);
+
+    res
+      .status(200)
+      .json(new ApiResponse("Password changed successfully", null));
   },
 );
 
@@ -64,4 +74,5 @@ export const userController = {
   becomeProvider,
   getUsers,
   deleteUser,
+  changePassword,
 };

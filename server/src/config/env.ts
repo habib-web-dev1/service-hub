@@ -12,7 +12,10 @@ const envSchema = z.object({
 
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
 
-  JWT_REFRESH_SECRET: z.string().min(1, "JWT_REFRESH_SECRET is required"),
+  // Reserved for future refresh-token implementation
+  JWT_REFRESH_SECRET: z.string().optional(),
+
+  CORS_ORIGIN: z.string().default("http://localhost:3000"),
 });
 
 export const env = envSchema.parse(process.env);

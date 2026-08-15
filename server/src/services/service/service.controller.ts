@@ -19,6 +19,7 @@ const getServices = catchAsync(async (req: Request, res: Response) => {
     ...req.query,
     page: req.query.page ?? 1,
     limit: req.query.limit ?? 10,
+    includeInactive: req.query.includeInactive ?? false,
   };
 
   const result = await serviceService.getServices(query);

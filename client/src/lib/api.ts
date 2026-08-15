@@ -28,12 +28,6 @@ const request = async <T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  console.log("API request:", {
-    url: `${API_URL}${endpoint}`,
-    tokenExists: Boolean(token),
-    authorization: headers.get("Authorization"),
-  });
-
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,

@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { saveAuth } from "@/lib/auth";
 
 interface LoginResponse {
   user: {
@@ -37,9 +38,8 @@ export default function LoginPage() {
         password,
       });
 
-      // Save authentication information
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
+      // Save authentication information (localStorage + cookies for middleware)
+      saveAuth(result.token, result.user);
 
       // Redirect based on role
       if (result.user.role === "PROVIDER") {

@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { saveAuth } from "@/lib/auth";
 import { User, Briefcase } from "lucide-react";
 
 interface RegisterResponse {
@@ -44,8 +45,7 @@ export default function RegisterPage() {
         role,
       });
 
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
+      saveAuth(result.token, result.user);
 
       // Redirect based on role
       if (result.user.role === "PROVIDER") {
@@ -65,8 +65,12 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 shadow-xl backdrop-blur-md">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Create Account</h1>
-            <p className="mt-2 text-slate-400">Join ServiceHub today as a client or partner</p>
+            <h1 className="text-3xl font-bold bg-linear-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Create Account
+            </h1>
+            <p className="mt-2 text-slate-400">
+              Join ServiceHub today as a client or partner
+            </p>
           </div>
 
           {error && (
@@ -93,7 +97,9 @@ export default function RegisterPage() {
                 >
                   <User className="h-6 w-6 mb-2" />
                   <span className="text-sm font-semibold">Customer</span>
-                  <span className="text-xs text-slate-500 mt-1">I want to hire services</span>
+                  <span className="text-xs text-slate-500 mt-1">
+                    I want to hire services
+                  </span>
                 </button>
 
                 <button
@@ -106,8 +112,12 @@ export default function RegisterPage() {
                   }`}
                 >
                   <Briefcase className="h-6 w-6 mb-2" />
-                  <span className="text-sm font-semibold">Service Provider</span>
-                  <span className="text-xs text-slate-500 mt-1">I want to offer services</span>
+                  <span className="text-sm font-semibold">
+                    Service Provider
+                  </span>
+                  <span className="text-xs text-slate-500 mt-1">
+                    I want to offer services
+                  </span>
                 </button>
               </div>
             </div>
@@ -192,7 +202,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-3 font-semibold text-slate-950 transition hover:opacity-95 hover:shadow-lg hover:shadow-cyan-500/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg bg-linear-to-r from-cyan-500 to-blue-500 px-6 py-3 font-semibold text-slate-950 transition hover:opacity-95 hover:shadow-lg hover:shadow-cyan-500/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>

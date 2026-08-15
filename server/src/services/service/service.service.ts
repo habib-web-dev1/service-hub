@@ -25,6 +25,8 @@ interface ServiceQueryInput {
   providerId?: string;
   page: number;
   limit: number;
+  /** When true (admin only), inactive services are included in results */
+  includeInactive?: boolean;
 }
 
 const ensureCategoryExists = async (categoryId: string) => {
@@ -86,26 +88,25 @@ const createService = async (data: CreateServiceInput) => {
 };
 
 const getServices = async (query?: ServiceQueryInput) => {
-  const { search, categoryId, providerId, page = 1, limit = 10 } = query ?? {};
+  const {
+    search,
+    categoryId,
+    providerId,
+    page = 1,
+    limit = 10,
+    includeInactive = false,
+  } = query ?? {};
 
   const where = {
     isDeleted: false,
+    // Public listing only shows active services; admin can pass includeInactive=true
+    ...(!includeInactive ? { isActive: true } : {}),
 
     ...(search
       ? {
           OR: [
-            {
-              title: {
-                contains: search,
-                mode: "insensitive" as const,
-              },
-            },
-            {
-              description: {
-                contains: search,
-                mode: "insensitive" as const,
-              },
-            },
+            { title: { contains: search, mode: "insensitive" as const } },
+            { description: { contains: search, mode: "insensitive" as const } },
           ],
         }
       : {}),

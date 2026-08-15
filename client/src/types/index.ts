@@ -31,6 +31,8 @@ export interface User {
   email: string;
   phone: string | null;
   role: "CUSTOMER" | "PROVIDER" | "ADMIN";
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthResponse {
@@ -46,6 +48,12 @@ export interface Booking {
   scheduledAt: string;
   notes: string | null;
   service?: Service;
+  customer?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+  };
   createdAt: string;
   updatedAt: string;
 }

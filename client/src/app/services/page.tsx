@@ -4,7 +4,15 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { Search, Star, Clock, Filter, Layers, ArrowLeft, ArrowRight, Compass } from "lucide-react";
+import {
+  Search,
+  Clock,
+  Filter,
+  Layers,
+  ArrowLeft,
+  ArrowRight,
+  Compass,
+} from "lucide-react";
 
 interface Category {
   id: string;
@@ -45,11 +53,16 @@ interface ServicesResponse {
 }
 
 const categoryImages: Record<string, string> = {
-  plumbing: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop",
-  cleaning: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop",
-  electrical: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop",
-  photography: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop",
-  fallback: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop"
+  plumbing:
+    "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop",
+  cleaning:
+    "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&auto=format&fit=crop",
+  electrical:
+    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop",
+  photography:
+    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop",
+  fallback:
+    "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop",
 };
 
 const getCategoryImage = (slug?: string) => {
@@ -57,25 +70,17 @@ const getCategoryImage = (slug?: string) => {
   return categoryImages[slug.toLowerCase()] || categoryImages.fallback;
 };
 
-// Seed random-looking but static ratings for visual layout
-const getServiceRating = (id: string) => {
-  const code = id.charCodeAt(id.length - 1) || 5;
-  const rating = 4.5 + (code % 6) * 0.1;
-  const count = 10 + (code * 3) % 40;
-  return { rating: rating.toFixed(1), count };
-};
-
 function ServicesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // URL queries
   const activeCategoryId = searchParams.get("categoryId") || "";
   const initialSearch = searchParams.get("search") || "";
 
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  
+
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(activeCategoryId);
 
@@ -93,16 +98,18 @@ function ServicesContent() {
 
       // Build endpoint path dynamically
       let endpoint = "/services?limit=100";
-      
+
       // If we are filtering by a category slug or CUID
       if (selectedCategory) {
         // Find CUID matching category slug/id
-        const matched = catResult.find(c => c.slug === selectedCategory || c.id === selectedCategory);
+        const matched = catResult.find(
+          (c) => c.slug === selectedCategory || c.id === selectedCategory,
+        );
         if (matched) {
           endpoint += `&categoryId=${matched.id}`;
         }
       }
-      
+
       if (search) {
         endpoint += `&search=${encodeURIComponent(search)}`;
       }
@@ -168,7 +175,10 @@ function ServicesContent() {
               placeholder="e.g. leak, kitchen..."
               className="w-full rounded-lg border border-slate-700 bg-slate-950 py-2.5 pl-4 pr-10 text-sm text-white outline-none focus:border-cyan-400"
             />
-            <button type="submit" className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-cyan-400 cursor-pointer">
+            <button
+              type="submit"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-cyan-400 cursor-pointer"
+            >
               <Search className="h-4 w-4" />
             </button>
           </form>
@@ -184,7 +194,9 @@ function ServicesContent() {
             <button
               onClick={() => handleCategorySelect("")}
               className={`w-full text-left rounded-lg px-3 py-2 text-sm font-semibold transition flex items-center gap-2 cursor-pointer ${
-                !selectedCategory ? "bg-cyan-500 text-slate-950" : "text-slate-400 hover:bg-slate-800/40 hover:text-white"
+                !selectedCategory
+                  ? "bg-cyan-500 text-slate-950"
+                  : "text-slate-400 hover:bg-slate-800/40 hover:text-white"
               }`}
             >
               <Compass className="h-4 w-4" />
@@ -229,14 +241,18 @@ function ServicesContent() {
           </div>
         ) : error ? (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6">
-            <h2 className="text-lg font-semibold text-red-400">Failed to load services</h2>
+            <h2 className="text-lg font-semibold text-red-400">
+              Failed to load services
+            </h2>
             <p className="mt-2 text-sm text-red-300">{error}</p>
           </div>
         ) : services.length === 0 ? (
           <div className="rounded-xl border border-slate-850 bg-slate-900/20 p-12 text-center">
             <Layers className="mx-auto h-12 w-12 text-slate-600 mb-4" />
             <h2 className="text-xl font-bold">No matches found</h2>
-            <p className="mt-2 text-slate-400">Try adjusting your keywords or clearing the category filters.</p>
+            <p className="mt-2 text-slate-400">
+              Try adjusting your keywords or clearing the category filters.
+            </p>
             <button
               onClick={handleResetFilters}
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-400 cursor-pointer"
@@ -247,12 +263,14 @@ function ServicesContent() {
         ) : (
           <div className="space-y-6">
             <div className="flex justify-between items-center text-sm text-slate-400">
-              <p>{services.length} active service{services.length !== 1 ? "s" : ""} found</p>
+              <p>
+                {services.length} active service
+                {services.length !== 1 ? "s" : ""} found
+              </p>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {services.map((service) => {
-                const ratingInfo = getServiceRating(service.id);
                 return (
                   <div
                     key={service.id}
@@ -275,14 +293,7 @@ function ServicesContent() {
                     {/* Card Content */}
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
-                        {/* Rating Badging */}
-                        <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                          <Star className="h-3.5 w-3.5 fill-yellow-400" />
-                          <span className="font-bold">{ratingInfo.rating}</span>
-                          <span className="text-slate-500">({ratingInfo.count})</span>
-                        </div>
-
-                        <h3 className="mt-2.5 text-lg font-bold text-white group-hover:text-cyan-400 transition line-clamp-1">
+                        <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition line-clamp-1">
                           {service.title}
                         </h3>
 
@@ -300,16 +311,22 @@ function ServicesContent() {
                               {service.duration} mins
                             </span>
                           )}
-                          <span className="truncate">By {service.provider?.name}</span>
+                          <span className="truncate">
+                            By {service.provider?.name}
+                          </span>
                         </div>
 
                         {/* Price & Action */}
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-[10px] uppercase tracking-wider text-slate-500">Service Fee</p>
-                            <p className="text-lg font-extrabold text-cyan-400">${Number(service.price).toFixed(2)}</p>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-500">
+                              Service Fee
+                            </p>
+                            <p className="text-lg font-extrabold text-cyan-400">
+                              ${Number(service.price).toFixed(2)}
+                            </p>
                           </div>
-                          
+
                           <Link
                             href={`/services/${service.id}`}
                             className="rounded-lg bg-cyan-500 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-400 cursor-pointer"
@@ -344,28 +361,35 @@ export default function ServicesPage() {
       <div className="mx-auto max-w-7xl">
         {/* Navigation Info */}
         <div className="mb-10 flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300"
+          >
             <ArrowLeft className="h-3 w-3" />
             Back to Home
           </Link>
         </div>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">
             Available Service Listings
           </h1>
-          <p className="mt-2 text-sm text-slate-400">Vetted local professionals ready to work on your schedule</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Vetted local professionals ready to work on your schedule
+          </p>
         </div>
 
         {/* Suspense wrapper for client routing */}
-        <Suspense fallback={
-          <div className="flex min-h-[400px] items-center justify-center">
-            <div className="text-center animate-pulse">
-              <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-cyan-400" />
-              <p className="text-slate-400">Loading catalog...</p>
+        <Suspense
+          fallback={
+            <div className="flex min-h-[400px] items-center justify-center">
+              <div className="text-center animate-pulse">
+                <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-cyan-400" />
+                <p className="text-slate-400">Loading catalog...</p>
+              </div>
             </div>
-          </div>
-        }>
+          }
+        >
           <ServicesContent />
         </Suspense>
       </div>
@@ -374,5 +398,9 @@ export default function ServicesPage() {
 }
 
 function Loader2({ className }: { className?: string }) {
-  return <div className={`border-2 border-slate-700 border-t-cyan-400 rounded-full animate-spin ${className}`} />;
+  return (
+    <div
+      className={`border-2 border-slate-700 border-t-cyan-400 rounded-full animate-spin ${className}`}
+    />
+  );
 }

@@ -6,6 +6,7 @@ import { validateRequest } from "../middlewares/validateRequest.js";
 
 import { userController } from "../services/user/user.controller.js";
 import {
+  changePasswordSchema,
   updateUserSchema,
   userQuerySchema,
 } from "../services/user/user.validation.js";
@@ -23,6 +24,16 @@ router.patch(
     body: updateUserSchema,
   }),
   userController.updateMe,
+);
+
+// Change password
+router.patch(
+  "/me/password",
+  authenticate,
+  validateRequest({
+    body: changePasswordSchema,
+  }),
+  userController.changePassword,
 );
 
 // Become a provider

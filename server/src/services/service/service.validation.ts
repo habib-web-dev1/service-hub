@@ -41,5 +41,8 @@ export const serviceQuerySchema = z.object({
 
   page: z.coerce.number().int().positive().optional().default(1),
 
-  limit: z.coerce.number().int().positive().max(100).optional().default(10),
+  limit: z.coerce.number().int().positive().max(1000).optional().default(10),
+
+  /** Admin only — include inactive services */
+  includeInactive: z.coerce.boolean().optional().default(false),
 });

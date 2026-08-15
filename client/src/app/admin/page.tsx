@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   FolderPlus,
   Loader2,
-  Trash
+  Trash,
 } from "lucide-react";
 
 interface User {
@@ -69,9 +69,11 @@ interface Booking {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  
+
   // Navigation tabs
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "categories" | "services" | "bookings">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "users" | "categories" | "services" | "bookings"
+  >("overview");
 
   // Data states
   const [users, setUsers] = useState<User[]>([]);
@@ -108,19 +110,26 @@ export default function AdminDashboardPage() {
       }
 
       // Fetch all required admin stats
-      const [usersData, categoriesData, servicesData, bookingsData] = await Promise.all([
-        api.get<{ data: User[] }>("/users?limit=100"),
-        api.get<Category[]>("/categories"),
-        api.get<{ data: Service[] }>("/services?limit=100"),
-        api.get<{ data: Booking[] }>("/bookings"),
-      ]);
+      const [usersData, categoriesData, servicesData, bookingsData] =
+        await Promise.all([
+          api.get<{ data: User[] }>("/users?limit=100"),
+          api.get<Category[]>("/categories"),
+          api.get<{ data: Service[] }>(
+            "/services?limit=1000&includeInactive=true",
+          ),
+          api.get<{ data: Booking[] }>("/bookings"),
+        ]);
 
       setUsers(usersData.data);
       setCategories(categoriesData);
       setServices(servicesData.data);
       setBookings(bookingsData.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load admin dashboard data.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load admin dashboard data.",
+      );
     } finally {
       setLoading(false);
     }
@@ -137,7 +146,11 @@ export default function AdminDashboardPage() {
 
   // User Actions
   const handleDeleteUser = async (userId: string) => {
-    if (!window.confirm("Are you sure you want to delete this user? This action soft-deletes the user account.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this user? This action soft-deletes the user account.",
+      )
+    ) {
       return;
     }
 
@@ -173,14 +186,20 @@ export default function AdminDashboardPage() {
       setNewCatDesc("");
       showSuccessMessage("Category created successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create category.");
+      setError(
+        err instanceof Error ? err.message : "Failed to create category.",
+      );
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDeleteCategory = async (catId: string) => {
-    if (!window.confirm("Are you sure you want to delete this category? Services in this category will remain, but the category slug will be soft-deleted.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this category? Services in this category will remain, but the category slug will be soft-deleted.",
+      )
+    ) {
       return;
     }
 
@@ -188,11 +207,13 @@ export default function AdminDashboardPage() {
       setActionLoading(true);
       await api.delete(`/categories/${catId}`);
       setCategories((prev) =>
-        prev.map((c) => (c.id === catId ? { ...c, isDeleted: true } : c))
+        prev.map((c) => (c.id === catId ? { ...c, isDeleted: true } : c)),
       );
       showSuccessMessage("Category deleted successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete category.");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete category.",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -201,13 +222,17 @@ export default function AdminDashboardPage() {
   const handleRestoreCategory = async (catId: string) => {
     try {
       setActionLoading(true);
-      const restored = await api.patch<Category>(`/categories/${catId}/restore`);
+      const restored = await api.patch<Category>(
+        `/categories/${catId}/restore`,
+      );
       setCategories((prev) =>
-        prev.map((c) => (c.id === catId ? { ...c, isDeleted: false } : c))
+        prev.map((c) => (c.id === catId ? { ...c, isDeleted: false } : c)),
       );
       showSuccessMessage("Category restored successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to restore category.");
+      setError(
+        err instanceof Error ? err.message : "Failed to restore category.",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -215,7 +240,11 @@ export default function AdminDashboardPage() {
 
   // Service Actions
   const handleDeleteService = async (serviceId: string) => {
-    if (!window.confirm("Are you sure you want to delete this service? This is a soft-delete.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this service? This is a soft-delete.",
+      )
+    ) {
       return;
     }
 
@@ -225,7 +254,9 @@ export default function AdminDashboardPage() {
       setServices((prev) => prev.filter((s) => s.id !== serviceId));
       showSuccessMessage("Service deleted successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete service.");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete service.",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -243,11 +274,15 @@ export default function AdminDashboardPage() {
         status: "CANCELLED",
       });
       setBookings((prev) =>
-        prev.map((b) => (b.id === bookingId ? { ...b, status: "CANCELLED" } : b))
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, status: "CANCELLED" } : b,
+        ),
       );
       showSuccessMessage("Booking cancelled successfully.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to cancel booking.");
+      setError(
+        err instanceof Error ? err.message : "Failed to cancel booking.",
+      );
     } finally {
       setActionLoading(false);
     }
@@ -274,8 +309,13 @@ export default function AdminDashboardPage() {
               <ShieldAlert className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Admin Control Panel</h1>
-              <p className="text-sm text-slate-400">Monitor platform metrics, manage database records, and control bookings</p>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Admin Control Panel
+              </h1>
+              <p className="text-sm text-slate-400">
+                Monitor platform metrics, manage database records, and control
+                bookings
+              </p>
             </div>
           </div>
           <button
@@ -309,7 +349,9 @@ export default function AdminDashboardPage() {
           <button
             onClick={() => setActiveTab("overview")}
             className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition cursor-pointer ${
-              activeTab === "overview" ? "bg-cyan-500 text-slate-950" : "bg-slate-900 hover:bg-slate-800 text-slate-300"
+              activeTab === "overview"
+                ? "bg-cyan-500 text-slate-950"
+                : "bg-slate-900 hover:bg-slate-800 text-slate-300"
             }`}
           >
             Overview
@@ -317,7 +359,9 @@ export default function AdminDashboardPage() {
           <button
             onClick={() => setActiveTab("users")}
             className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition cursor-pointer ${
-              activeTab === "users" ? "bg-cyan-500 text-slate-950" : "bg-slate-900 hover:bg-slate-800 text-slate-300"
+              activeTab === "users"
+                ? "bg-cyan-500 text-slate-950"
+                : "bg-slate-900 hover:bg-slate-800 text-slate-300"
             }`}
           >
             <Users className="h-4 w-4" />
@@ -326,7 +370,9 @@ export default function AdminDashboardPage() {
           <button
             onClick={() => setActiveTab("categories")}
             className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition cursor-pointer ${
-              activeTab === "categories" ? "bg-cyan-500 text-slate-950" : "bg-slate-900 hover:bg-slate-800 text-slate-300"
+              activeTab === "categories"
+                ? "bg-cyan-500 text-slate-950"
+                : "bg-slate-900 hover:bg-slate-800 text-slate-300"
             }`}
           >
             <Grid className="h-4 w-4" />
@@ -335,7 +381,9 @@ export default function AdminDashboardPage() {
           <button
             onClick={() => setActiveTab("services")}
             className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition cursor-pointer ${
-              activeTab === "services" ? "bg-cyan-500 text-slate-950" : "bg-slate-900 hover:bg-slate-800 text-slate-300"
+              activeTab === "services"
+                ? "bg-cyan-500 text-slate-950"
+                : "bg-slate-900 hover:bg-slate-800 text-slate-300"
             }`}
           >
             <FileText className="h-4 w-4" />
@@ -344,7 +392,9 @@ export default function AdminDashboardPage() {
           <button
             onClick={() => setActiveTab("bookings")}
             className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition cursor-pointer ${
-              activeTab === "bookings" ? "bg-cyan-500 text-slate-950" : "bg-slate-900 hover:bg-slate-800 text-slate-300"
+              activeTab === "bookings"
+                ? "bg-cyan-500 text-slate-950"
+                : "bg-slate-900 hover:bg-slate-800 text-slate-300"
             }`}
           >
             <Calendar className="h-4 w-4" />
@@ -359,40 +409,60 @@ export default function AdminDashboardPage() {
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-400">Total Users</p>
+                  <p className="text-sm font-medium text-slate-400">
+                    Total Users
+                  </p>
                   <Users className="h-6 w-6 text-cyan-400" />
                 </div>
                 <p className="mt-4 text-4xl font-extrabold">{users.length}</p>
-                <div className="mt-2 text-xs text-slate-500">Registered customers & providers</div>
+                <div className="mt-2 text-xs text-slate-500">
+                  Registered customers & providers
+                </div>
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-400">Categories</p>
+                  <p className="text-sm font-medium text-slate-400">
+                    Categories
+                  </p>
                   <Grid className="h-6 w-6 text-blue-400" />
                 </div>
-                <p className="mt-4 text-4xl font-extrabold">{categories.length}</p>
-                <div className="mt-2 text-xs text-slate-500">Service categorization options</div>
+                <p className="mt-4 text-4xl font-extrabold">
+                  {categories.length}
+                </p>
+                <div className="mt-2 text-xs text-slate-500">
+                  Service categorization options
+                </div>
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-400">Active Services</p>
+                  <p className="text-sm font-medium text-slate-400">
+                    Active Services
+                  </p>
                   <FileText className="h-6 w-6 text-purple-400" />
                 </div>
                 <p className="mt-4 text-4xl font-extrabold">
                   {services.filter((s) => s.isActive).length}
                 </p>
-                <div className="mt-2 text-xs text-slate-500">Available client listings</div>
+                <div className="mt-2 text-xs text-slate-500">
+                  Available client listings
+                </div>
               </div>
 
               <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-md">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-400">Bookings Made</p>
+                  <p className="text-sm font-medium text-slate-400">
+                    Bookings Made
+                  </p>
                   <Calendar className="h-6 w-6 text-yellow-400" />
                 </div>
-                <p className="mt-4 text-4xl font-extrabold">{bookings.length}</p>
-                <div className="mt-2 text-xs text-slate-500">Appointments scheduled</div>
+                <p className="mt-4 text-4xl font-extrabold">
+                  {bookings.length}
+                </p>
+                <div className="mt-2 text-xs text-slate-500">
+                  Appointments scheduled
+                </div>
               </div>
             </div>
 
@@ -402,31 +472,51 @@ export default function AdminDashboardPage() {
               <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-6">
                 <h3 className="text-lg font-bold mb-4 flex items-center justify-between">
                   <span>Recent Bookings</span>
-                  <button onClick={() => setActiveTab("bookings")} className="text-xs text-cyan-400 hover:underline">
+                  <button
+                    onClick={() => setActiveTab("bookings")}
+                    className="text-xs text-cyan-400 hover:underline"
+                  >
                     View all
                   </button>
                 </h3>
                 <div className="divide-y divide-slate-800">
                   {bookings.slice(0, 5).map((booking) => (
-                    <div key={booking.id} className="py-3 flex justify-between items-center text-sm">
+                    <div
+                      key={booking.id}
+                      className="py-3 flex justify-between items-center text-sm"
+                    >
                       <div>
-                        <p className="font-semibold text-slate-200">{booking.service.title}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">By {booking.customer.name}</p>
+                        <p className="font-semibold text-slate-200">
+                          {booking.service.title}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          By {booking.customer.name}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          booking.status === "COMPLETED" ? "bg-blue-500/10 text-blue-400" :
-                          booking.status === "CONFIRMED" ? "bg-green-500/10 text-green-400" :
-                          booking.status === "CANCELLED" ? "bg-red-500/10 text-red-400" : "bg-yellow-500/10 text-yellow-400"
-                        }`}>
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            booking.status === "COMPLETED"
+                              ? "bg-blue-500/10 text-blue-400"
+                              : booking.status === "CONFIRMED"
+                                ? "bg-green-500/10 text-green-400"
+                                : booking.status === "CANCELLED"
+                                  ? "bg-red-500/10 text-red-400"
+                                  : "bg-yellow-500/10 text-yellow-400"
+                          }`}
+                        >
                           {booking.status}
                         </span>
-                        <p className="text-xs text-slate-500 mt-1">{new Date(booking.scheduledAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {new Date(booking.scheduledAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                   ))}
                   {bookings.length === 0 && (
-                    <p className="text-slate-500 text-center py-6">No bookings registered in the system.</p>
+                    <p className="text-slate-500 text-center py-6">
+                      No bookings registered in the system.
+                    </p>
                   )}
                 </div>
               </div>
@@ -435,27 +525,42 @@ export default function AdminDashboardPage() {
               <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-6">
                 <h3 className="text-lg font-bold mb-4 flex items-center justify-between">
                   <span>Newest Registrations</span>
-                  <button onClick={() => setActiveTab("users")} className="text-xs text-cyan-400 hover:underline">
+                  <button
+                    onClick={() => setActiveTab("users")}
+                    className="text-xs text-cyan-400 hover:underline"
+                  >
                     View all
                   </button>
                 </h3>
                 <div className="divide-y divide-slate-800">
                   {users.slice(0, 5).map((u) => (
-                    <div key={u.id} className="py-3 flex justify-between items-center text-sm">
+                    <div
+                      key={u.id}
+                      className="py-3 flex justify-between items-center text-sm"
+                    >
                       <div>
                         <p className="font-semibold text-slate-200">{u.name}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{u.email}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {u.email}
+                        </p>
                       </div>
-                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wider ${
-                        u.role === "ADMIN" ? "bg-red-500/10 text-red-400" :
-                        u.role === "PROVIDER" ? "bg-blue-500/10 text-blue-400" : "bg-slate-800 text-slate-400"
-                      }`}>
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wider ${
+                          u.role === "ADMIN"
+                            ? "bg-red-500/10 text-red-400"
+                            : u.role === "PROVIDER"
+                              ? "bg-blue-500/10 text-blue-400"
+                              : "bg-slate-800 text-slate-400"
+                        }`}
+                      >
                         {u.role}
                       </span>
                     </div>
                   ))}
                   {users.length === 0 && (
-                    <p className="text-slate-500 text-center py-6">No users found.</p>
+                    <p className="text-slate-500 text-center py-6">
+                      No users found.
+                    </p>
                   )}
                 </div>
               </div>
@@ -473,21 +578,36 @@ export default function AdminDashboardPage() {
                     <th className="py-4 px-6 font-semibold">User Details</th>
                     <th className="py-4 px-6 font-semibold">Email</th>
                     <th className="py-4 px-6 font-semibold">Phone</th>
-                    <th className="py-4 px-6 font-semibold text-center">Role</th>
-                    <th className="py-4 px-6 font-semibold text-right">Actions</th>
+                    <th className="py-4 px-6 font-semibold text-center">
+                      Role
+                    </th>
+                    <th className="py-4 px-6 font-semibold text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {users.map((u) => (
                     <tr key={u.id} className="hover:bg-slate-900/10 transition">
-                      <td className="py-4 px-6 font-medium text-slate-200">{u.name}</td>
-                      <td className="py-4 px-6 text-slate-300 break-all">{u.email}</td>
-                      <td className="py-4 px-6 text-slate-400">{u.phone || "—"}</td>
+                      <td className="py-4 px-6 font-medium text-slate-200">
+                        {u.name}
+                      </td>
+                      <td className="py-4 px-6 text-slate-300 break-all">
+                        {u.email}
+                      </td>
+                      <td className="py-4 px-6 text-slate-400">
+                        {u.phone || "—"}
+                      </td>
                       <td className="py-4 px-6 text-center">
-                        <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wider ${
-                          u.role === "ADMIN" ? "bg-red-500/10 text-red-400" :
-                          u.role === "PROVIDER" ? "bg-blue-500/10 text-blue-400" : "bg-slate-800 text-slate-400"
-                        }`}>
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wider ${
+                            u.role === "ADMIN"
+                              ? "bg-red-500/10 text-red-400"
+                              : u.role === "PROVIDER"
+                                ? "bg-blue-500/10 text-blue-400"
+                                : "bg-slate-800 text-slate-400"
+                          }`}
+                        >
                           {u.role}
                         </span>
                       </td>
@@ -502,14 +622,19 @@ export default function AdminDashboardPage() {
                             Delete
                           </button>
                         ) : (
-                          <span className="text-xs text-slate-600 italic">Protected</span>
+                          <span className="text-xs text-slate-600 italic">
+                            Protected
+                          </span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 px-6 text-center text-slate-500">
+                      <td
+                        colSpan={5}
+                        className="py-8 px-6 text-center text-slate-500"
+                      >
                         No registered users.
                       </td>
                     </tr>
@@ -540,22 +665,41 @@ export default function AdminDashboardPage() {
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-950/40 text-slate-400">
                       <th className="py-4 px-6 font-semibold">Category Name</th>
-                      <th className="py-4 px-6 font-semibold">Slug Identifier</th>
+                      <th className="py-4 px-6 font-semibold">
+                        Slug Identifier
+                      </th>
                       <th className="py-4 px-6 font-semibold">Description</th>
-                      <th className="py-4 px-6 font-semibold text-center">Status</th>
-                      <th className="py-4 px-6 font-semibold text-right">Actions</th>
+                      <th className="py-4 px-6 font-semibold text-center">
+                        Status
+                      </th>
+                      <th className="py-4 px-6 font-semibold text-right">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
                     {categories.map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-900/10 transition">
-                        <td className="py-4 px-6 font-medium text-slate-200">{c.name}</td>
-                        <td className="py-4 px-6 text-slate-400 font-mono text-xs">{c.slug}</td>
-                        <td className="py-4 px-6 text-slate-300 max-w-xs truncate">{c.description || "—"}</td>
+                      <tr
+                        key={c.id}
+                        className="hover:bg-slate-900/10 transition"
+                      >
+                        <td className="py-4 px-6 font-medium text-slate-200">
+                          {c.name}
+                        </td>
+                        <td className="py-4 px-6 text-slate-400 font-mono text-xs">
+                          {c.slug}
+                        </td>
+                        <td className="py-4 px-6 text-slate-300 max-w-xs truncate">
+                          {c.description || "—"}
+                        </td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            c.isDeleted ? "bg-red-500/10 text-red-400" : "bg-green-500/10 text-green-400"
-                          }`}>
+                          <span
+                            className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${
+                              c.isDeleted
+                                ? "bg-red-500/10 text-red-400"
+                                : "bg-green-500/10 text-green-400"
+                            }`}
+                          >
                             {c.isDeleted ? "Deleted" : "Active"}
                           </span>
                         </td>
@@ -597,16 +741,24 @@ export default function AdminDashboardPage() {
                     <th className="py-4 px-6 font-semibold">Service Listing</th>
                     <th className="py-4 px-6 font-semibold">Category</th>
                     <th className="py-4 px-6 font-semibold">Provider</th>
-                    <th className="py-4 px-6 font-semibold">Hourly/Flat Rate</th>
-                    <th className="py-4 px-6 font-semibold text-right">Actions</th>
+                    <th className="py-4 px-6 font-semibold">
+                      Hourly/Flat Rate
+                    </th>
+                    <th className="py-4 px-6 font-semibold text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {services.map((s) => (
                     <tr key={s.id} className="hover:bg-slate-900/10 transition">
                       <td className="py-4 px-6">
-                        <div className="font-medium text-slate-200">{s.title}</div>
-                        <div className="text-xs text-slate-500 mt-1 max-w-sm truncate">{s.description}</div>
+                        <div className="font-medium text-slate-200">
+                          {s.title}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1 max-w-sm truncate">
+                          {s.description}
+                        </div>
                       </td>
                       <td className="py-4 px-6">
                         <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-xs text-cyan-400">
@@ -614,8 +766,12 @@ export default function AdminDashboardPage() {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <p className="text-slate-200">{s.provider?.name || "—"}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{s.provider?.email}</p>
+                        <p className="text-slate-200">
+                          {s.provider?.name || "—"}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {s.provider?.email}
+                        </p>
                       </td>
                       <td className="py-4 px-6 text-cyan-400 font-bold">
                         ${Number(s.price).toFixed(2)}
@@ -633,7 +789,10 @@ export default function AdminDashboardPage() {
                   ))}
                   {services.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 px-6 text-center text-slate-500">
+                      <td
+                        colSpan={5}
+                        className="py-8 px-6 text-center text-slate-500"
+                      >
                         No services published on the platform.
                       </td>
                     </tr>
@@ -654,35 +813,52 @@ export default function AdminDashboardPage() {
                     <th className="py-4 px-6 font-semibold">Service Booked</th>
                     <th className="py-4 px-6 font-semibold">Client Details</th>
                     <th className="py-4 px-6 font-semibold">Scheduled Date</th>
-                    <th className="py-4 px-6 font-semibold text-center">Status</th>
-                    <th className="py-4 px-6 font-semibold text-right">Actions</th>
+                    <th className="py-4 px-6 font-semibold text-center">
+                      Status
+                    </th>
+                    <th className="py-4 px-6 font-semibold text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
                   {bookings.map((b) => (
                     <tr key={b.id} className="hover:bg-slate-900/10 transition">
                       <td className="py-4 px-6">
-                        <p className="font-semibold text-slate-200">{b.service.title}</p>
-                        <p className="text-xs text-slate-500 mt-1">Provider: {b.service.provider?.name || "—"}</p>
+                        <p className="font-semibold text-slate-200">
+                          {b.service.title}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Provider: {b.service.provider?.name || "—"}
+                        </p>
                       </td>
                       <td className="py-4 px-6">
                         <p className="text-slate-200">{b.customer.name}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{b.customer.email}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {b.customer.email}
+                        </p>
                       </td>
                       <td className="py-4 px-6 text-slate-300">
                         {new Date(b.scheduledAt).toLocaleString()}
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          b.status === "COMPLETED" ? "bg-blue-500/10 text-blue-400" :
-                          b.status === "CONFIRMED" ? "bg-green-500/10 text-green-400" :
-                          b.status === "CANCELLED" ? "bg-red-500/10 text-red-400" : "bg-yellow-500/10 text-yellow-400"
-                        }`}>
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            b.status === "COMPLETED"
+                              ? "bg-blue-500/10 text-blue-400"
+                              : b.status === "CONFIRMED"
+                                ? "bg-green-500/10 text-green-400"
+                                : b.status === "CANCELLED"
+                                  ? "bg-red-500/10 text-red-400"
+                                  : "bg-yellow-500/10 text-yellow-400"
+                          }`}
+                        >
                           {b.status}
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        {b.status !== "CANCELLED" && b.status !== "COMPLETED" ? (
+                        {b.status !== "CANCELLED" &&
+                        b.status !== "COMPLETED" ? (
                           <button
                             onClick={() => handleCancelBooking(b.id)}
                             disabled={actionLoading}
@@ -691,14 +867,19 @@ export default function AdminDashboardPage() {
                             Cancel Appointment
                           </button>
                         ) : (
-                          <span className="text-xs text-slate-600 italic">No Actions</span>
+                          <span className="text-xs text-slate-600 italic">
+                            No Actions
+                          </span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {bookings.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-8 px-6 text-center text-slate-500">
+                      <td
+                        colSpan={5}
+                        className="py-8 px-6 text-center text-slate-500"
+                      >
                         No bookings exist.
                       </td>
                     </tr>
@@ -729,14 +910,18 @@ export default function AdminDashboardPage() {
 
             <form onSubmit={handleCreateCategory} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Category Name</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Category Name
+                </label>
                 <input
                   type="text"
                   value={newCatName}
                   onChange={(e) => {
                     setNewCatName(e.target.value);
                     // Autofill slug suggestion
-                    setNewCatSlug(e.target.value.toLowerCase().trim().replace(/\s+/g, "-"));
+                    setNewCatSlug(
+                      e.target.value.toLowerCase().trim().replace(/\s+/g, "-"),
+                    );
                   }}
                   placeholder="e.g. Gardening Services"
                   required
@@ -745,7 +930,9 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Slug Identifier</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Slug Identifier
+                </label>
                 <input
                   type="text"
                   value={newCatSlug}
@@ -757,7 +944,9 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Description</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Description
+                </label>
                 <textarea
                   value={newCatDesc}
                   onChange={(e) => setNewCatDesc(e.target.value)}
