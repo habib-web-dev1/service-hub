@@ -18,4 +18,14 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
 });
 
-export const env = envSchema.parse(process.env);
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error(
+    "❌ Invalid or missing environment variables:\n",
+    parsed.error.flatten().fieldErrors,
+  );
+  throw new Error("Invalid environment configuration. Check server logs.");
+}
+
+export const env = parsed.data;
