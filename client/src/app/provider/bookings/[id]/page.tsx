@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { api } from "@/lib/api";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface Service {
   id: string;
@@ -42,6 +43,7 @@ export default function BookingDetailsPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -72,17 +74,13 @@ export default function BookingDetailsPage() {
   }, [bookingId]);
 
   const handleCancel = async () => {
-    if (!booking) {
-      return;
-    }
+    if (!booking) return;
+    setConfirmCancel(true);
+  };
 
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this booking?",
-    );
-
-    if (!confirmed) {
-      return;
-    }
+  const executeCancel = async () => {
+    setConfirmCancel(false);
+    if (!booking) return;
 
     try {
       setCancelling(true);
@@ -92,12 +90,7 @@ export default function BookingDetailsPage() {
       const result = await api.patch<Booking>(`/bookings/${booking.id}/cancel`);
 
       setBooking((current) =>
-        current
-          ? {
-              ...current,
-              status: result.status,
-            }
-          : current,
+        current ? { ...current, status: result.status } : current,
       );
 
       setSuccess("Booking cancelled successfully.");

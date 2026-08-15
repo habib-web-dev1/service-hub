@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { api } from "@/lib/api";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface Service {
   id: string;
@@ -40,6 +41,7 @@ export default function ProviderServicesPage() {
 
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const loadServices = async () => {
     try {
@@ -63,13 +65,13 @@ export default function ProviderServicesPage() {
   }, []);
 
   const handleDelete = async (serviceId: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this service?",
-    );
+    setConfirmDeleteId(serviceId);
+  };
 
-    if (!confirmed) {
-      return;
-    }
+  const confirmDelete = async () => {
+    const serviceId = confirmDeleteId;
+    setConfirmDeleteId(null);
+    if (!serviceId) return;
 
     try {
       setDeletingId(serviceId);
@@ -102,140 +104,153 @@ export default function ProviderServicesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="text-3xl font-bold">My Services</h1>
+    <>
+      <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
+        <div className="mx-auto max-w-6xl">
+          {/* Header */}
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="text-3xl font-bold">My Services</h1>
 
-            <p className="mt-2 text-slate-400">
-              Manage the services you provide.
-            </p>
-          </div>
-
-          <Link
-            href="/provider/services/new"
-            className="rounded-lg bg-cyan-500 px-5 py-3 text-center font-semibold text-slate-950 transition hover:bg-cyan-400"
-          >
-            + Create Service
-          </Link>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="mt-8 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
-            {error}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!error && services.length === 0 && (
-          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
-            <h2 className="text-xl font-semibold">No services yet</h2>
-
-            <p className="mt-2 text-slate-400">
-              You haven't created any services yet.
-            </p>
+              <p className="mt-2 text-slate-400">
+                Manage the services you provide.
+              </p>
+            </div>
 
             <Link
               href="/provider/services/new"
-              className="mt-6 inline-block rounded-lg bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
+              className="rounded-lg bg-cyan-500 px-5 py-3 text-center font-semibold text-slate-950 transition hover:bg-cyan-400"
             >
-              Create Your First Service
+              + Create Service
             </Link>
           </div>
-        )}
 
-        {/* Services */}
-        {services.length > 0 && (
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {services.map((service) => (
-              <div
-                key={service.id}
-                className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-lg"
+          {/* Error */}
+          {error && (
+            <div className="mt-8 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
+              {error}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!error && services.length === 0 && (
+            <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
+              <h2 className="text-xl font-semibold">No services yet</h2>
+
+              <p className="mt-2 text-slate-400">
+                You haven't created any services yet.
+              </p>
+
+              <Link
+                href="/provider/services/new"
+                className="mt-6 inline-block rounded-lg bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
               >
-                {/* Top */}
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    {service.category && (
-                      <span className="inline-block rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-400">
-                        {service.category.name}
-                      </span>
-                    )}
+                Create Your First Service
+              </Link>
+            </div>
+          )}
 
-                    <h2 className="mt-3 text-xl font-semibold">
-                      {service.title}
-                    </h2>
+          {/* Services */}
+          {services.length > 0 && (
+            <div className="mt-8 grid gap-6 md:grid-cols-2">
+              {services.map((service) => (
+                <div
+                  key={service.id}
+                  className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-lg"
+                >
+                  {/* Top */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      {service.category && (
+                        <span className="inline-block rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-400">
+                          {service.category.name}
+                        </span>
+                      )}
+
+                      <h2 className="mt-3 text-xl font-semibold">
+                        {service.title}
+                      </h2>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        service.isActive
+                          ? "bg-green-500/10 text-green-400"
+                          : "bg-red-500/10 text-red-400"
+                      }`}
+                    >
+                      {service.isActive ? "Active" : "Inactive"}
+                    </span>
                   </div>
 
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      service.isActive
-                        ? "bg-green-500/10 text-green-400"
-                        : "bg-red-500/10 text-red-400"
-                    }`}
-                  >
-                    {service.isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
+                  {/* Description */}
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-400">
+                    {service.description}
+                  </p>
 
-                {/* Description */}
-                <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-400">
-                  {service.description}
-                </p>
+                  {/* Details */}
+                  <div className="mt-6 grid grid-cols-2 gap-4">
+                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                      <p className="text-xs text-slate-500">Price</p>
 
-                {/* Details */}
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p className="text-xs text-slate-500">Price</p>
+                      <p className="mt-1 text-lg font-semibold text-cyan-400">
+                        ${Number(service.price).toFixed(2)}
+                      </p>
+                    </div>
 
-                    <p className="mt-1 text-lg font-semibold text-cyan-400">
-                      ${Number(service.price).toFixed(2)}
-                    </p>
+                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                      <p className="text-xs text-slate-500">Duration</p>
+
+                      <p className="mt-1 text-lg font-semibold text-white">
+                        {service.duration
+                          ? `${service.duration} min`
+                          : "Flexible"}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p className="text-xs text-slate-500">Duration</p>
+                  {/* Actions */}
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <Link
+                      href={`/services/${service.id}`}
+                      className="flex-1 rounded-lg border border-slate-700 px-4 py-3 text-center text-sm font-semibold transition hover:bg-slate-800"
+                    >
+                      View
+                    </Link>
 
-                    <p className="mt-1 text-lg font-semibold text-white">
-                      {service.duration
-                        ? `${service.duration} min`
-                        : "Flexible"}
-                    </p>
+                    <Link
+                      href={`/provider/services/${service.id}/edit`}
+                      className="flex-1 rounded-lg bg-cyan-500 px-4 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+                    >
+                      Edit
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(service.id)}
+                      disabled={deletingId === service.id}
+                      className="flex-1 rounded-lg border border-red-500/40 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {deletingId === service.id ? "Deleting..." : "Delete"}
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
 
-                {/* Actions */}
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                  <Link
-                    href={`/services/${service.id}`}
-                    className="flex-1 rounded-lg border border-slate-700 px-4 py-3 text-center text-sm font-semibold transition hover:bg-slate-800"
-                  >
-                    View
-                  </Link>
-
-                  <Link
-                    href={`/provider/services/${service.id}/edit`}
-                    className="flex-1 rounded-lg bg-cyan-500 px-4 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
-                  >
-                    Edit
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(service.id)}
-                    disabled={deletingId === service.id}
-                    className="flex-1 rounded-lg border border-red-500/40 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {deletingId === service.id ? "Deleting..." : "Delete"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+      {confirmDeleteId && (
+        <ConfirmModal
+          title="Delete Service"
+          message="Are you sure you want to delete this service? This action cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      )}
+    </>
   );
 }
