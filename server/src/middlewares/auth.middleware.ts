@@ -17,6 +17,8 @@ export const authenticate = (
 ) => {
   const authHeader = req.headers.authorization;
 
+  console.log("Authorization header:", authHeader);
+
   if (!authHeader) {
     return next(new ApiError(401, "Authentication required"));
   }

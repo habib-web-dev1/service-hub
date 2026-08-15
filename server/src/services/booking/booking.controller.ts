@@ -75,10 +75,22 @@ const cancelBooking = catchAsync(
       .json(new ApiResponse("Booking cancelled successfully", booking));
   },
 );
+const getProviderBookings = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const bookings = await bookingService.getProviderBookings(req.user!.userId);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse("Provider bookings retrieved successfully", bookings),
+      );
+  },
+);
 
 export const bookingController = {
   createBooking,
   getMyBookings,
+  getProviderBookings,
   getBookingById,
   updateBookingStatus,
   cancelBooking,

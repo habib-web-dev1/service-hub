@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "../../lib/apiError.js";
+
 interface CreateServiceInput {
   title: string;
   description: string;
@@ -8,6 +9,7 @@ interface CreateServiceInput {
   categoryId: string;
   providerId: string;
 }
+
 interface UpdateServiceInput {
   title?: string;
   description?: string;
@@ -16,6 +18,7 @@ interface UpdateServiceInput {
   categoryId?: string;
   isActive?: boolean;
 }
+
 interface ServiceQueryInput {
   search?: string;
   categoryId?: string;
@@ -23,27 +26,42 @@ interface ServiceQueryInput {
   page: number;
   limit: number;
 }
+
 const ensureCategoryExists = async (categoryId: string) => {
   const category = await prisma.category.findFirst({
-    where: { id: categoryId, isDeleted: false },
+    where: {
+      id: categoryId,
+      isDeleted: false,
+    },
   });
+
   if (!category) {
     throw new ApiError(404, "Category not found");
   }
+
   return category;
 };
+
 const ensureProviderExists = async (providerId: string) => {
   const provider = await prisma.user.findFirst({
-    where: { id: providerId, role: "PROVIDER", isDeleted: false },
+    where: {
+      id: providerId,
+      role: "PROVIDER",
+      isDeleted: false,
+    },
   });
+
   if (!provider) {
     throw new ApiError(404, "Provider not found");
   }
+
   return provider;
 };
+
 const createService = async (data: CreateServiceInput) => {
   await ensureCategoryExists(data.categoryId);
   await ensureProviderExists(data.providerId);
+
   return prisma.service.create({
     data: {
       title: data.title,
@@ -55,59 +73,187 @@ const createService = async (data: CreateServiceInput) => {
     },
     include: {
       category: true,
-      provider: { select: { id: true, name: true, email: true, phone: true } },
+      provider: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
     },
   });
 };
+
 const getServices = async (query?: ServiceQueryInput) => {
   const { search, categoryId, providerId, page = 1, limit = 10 } = query ?? {};
+
   const where = {
     isDeleted: false,
+
     ...(search
       ? {
           OR: [
-            { title: { contains: search, mode: "insensitive" as const } },
-            { description: { contains: search, mode: "insensitive" as const } },
+            {
+              title: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              description: {
+                contains: search,
+                mode: "insensitive" as const,
+              },
+            },
           ],
         }
       : {}),
+
     ...(categoryId ? { categoryId } : {}),
+
     ...(providerId ? { providerId } : {}),
   };
+
   const skip = (page - 1) * limit;
+
   const [services, total] = await Promise.all([
     prisma.service.findMany({
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: "desc" },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
       include: {
-        category: { select: { id: true, name: true, slug: true } },
-        provider: { select: { id: true, name: true } },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+
+        provider: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     }),
-    prisma.service.count({ where }),
+
+    prisma.service.count({
+      where,
+    }),
   ]);
+
   return {
     data: services,
-    meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
+
+/**
+ * Get services belonging to the authenticated provider.
+ */
+const getMyServices = async (providerId: string, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  const where = {
+    providerId,
+    isDeleted: false,
+  };
+
+  const [services, total] = await Promise.all([
+    prisma.service.findMany({
+      where,
+      skip,
+      take: limit,
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+
+        provider: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    }),
+
+    prisma.service.count({
+      where,
+    }),
+  ]);
+
+  return {
+    data: services,
+
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 const getServiceById = async (id: string) => {
   const service = await prisma.service.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+    },
+
     include: {
       category: {
-        select: { id: true, name: true, slug: true, description: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+        },
       },
-      provider: { select: { id: true, name: true, email: true, phone: true } },
+
+      provider: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
     },
   });
+
   if (!service) {
     throw new ApiError(404, "Service not found");
   }
+
   return service;
 };
+
 const updateService = async (
   id: string,
   providerId: string,
@@ -139,6 +285,7 @@ const updateService = async (
     where: {
       id,
     },
+
     data: {
       ...(data.title !== undefined && {
         title: data.title,
@@ -164,8 +311,10 @@ const updateService = async (
         isActive: data.isActive,
       }),
     },
+
     include: {
       category: true,
+
       provider: {
         select: {
           id: true,
@@ -201,6 +350,7 @@ const deleteService = async (id: string, providerId: string) => {
     where: {
       id,
     },
+
     data: {
       isDeleted: true,
       deletedAt: new Date(),
@@ -208,58 +358,11 @@ const deleteService = async (id: string, providerId: string) => {
     },
   });
 };
-const getMyServices = async (providerId: string, page = 1, limit = 10) => {
-  const skip = (page - 1) * limit;
 
-  const where = {
-    providerId,
-    isDeleted: false,
-  };
-
-  const [services, total] = await Promise.all([
-    prisma.service.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        provider: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    }),
-
-    prisma.service.count({
-      where,
-    }),
-  ]);
-
-  return {
-    data: services,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-};
 export const serviceService = {
   createService,
   getServices,
+  getMyServices,
   getServiceById,
   updateService,
   deleteService,

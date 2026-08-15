@@ -11,7 +11,7 @@ interface LoginResponse {
     name: string;
     email: string;
     phone: string | null;
-    role: string;
+    role: "CUSTOMER" | "PROVIDER" | "ADMIN";
   };
   token: string;
 }
@@ -33,14 +33,22 @@ export default function LoginPage() {
 
     try {
       const result = await api.post<LoginResponse>("/auth/login", {
-        email,
+        email: email.trim(),
         password,
       });
 
+      // Save authentication information
       localStorage.setItem("token", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
 
-      router.push("/services");
+      // Redirect based on role
+      if (result.user.role === "PROVIDER") {
+        router.push("/provider/services");
+      } else if (result.user.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/services");
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Invalid email or password.",
@@ -83,6 +91,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
+                autoComplete="email"
                 required
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-400"
               />
@@ -102,6 +111,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 required
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-400"
               />
@@ -117,7 +127,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/register"
               className="font-medium text-cyan-400 hover:text-cyan-300"

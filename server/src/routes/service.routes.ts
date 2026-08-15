@@ -13,6 +13,27 @@ import {
 
 const router = Router();
 
+// Get all services
+router.get(
+  "/",
+  validateRequest({
+    query: serviceQuerySchema,
+  }),
+  serviceController.getServices,
+);
+
+// Get services for logged-in provider
+router.get(
+  "/my",
+  authenticate,
+  authorize("PROVIDER"),
+  serviceController.getMyServices,
+);
+
+// Get service by ID
+router.get("/:id", serviceController.getServiceById);
+
+// Create service
 router.post(
   "/",
   authenticate,
@@ -23,23 +44,7 @@ router.post(
   serviceController.createService,
 );
 
-router.get(
-  "/",
-  validateRequest({
-    query: serviceQuerySchema,
-  }),
-  serviceController.getServices,
-);
-
-router.get(
-  "/my",
-  authenticate,
-  authorize("PROVIDER"),
-  serviceController.getMyServices,
-);
-
-router.get("/:id", serviceController.getServiceById);
-
+// Update service
 router.patch(
   "/:id",
   authenticate,
@@ -50,6 +55,7 @@ router.patch(
   serviceController.updateService,
 );
 
+// Delete service
 router.delete(
   "/:id",
   authenticate,

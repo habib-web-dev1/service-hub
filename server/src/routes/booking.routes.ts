@@ -27,6 +27,13 @@ router.post(
 // Get current customer's bookings
 router.get("/my", authorize("CUSTOMER"), bookingController.getMyBookings);
 
+// Get current provider's bookings
+router.get(
+  "/provider",
+  authorize("PROVIDER"),
+  bookingController.getProviderBookings,
+);
+
 // Get a single booking
 router.get("/:id", bookingController.getBookingById);
 

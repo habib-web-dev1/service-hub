@@ -20,21 +20,26 @@ const request = async <T>(
 ): Promise<T> => {
   const token = getToken();
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
+  const headers = new Headers(options.headers);
+
+  headers.set("Content-Type", "application/json");
 
   if (token) {
-    (headers as Record<string, string>).Authorization = `Bearer ${token}`;
+    headers.set("Authorization", `Bearer ${token}`);
   }
+
+  console.log("API request:", {
+    url: `${API_URL}${endpoint}`,
+    tokenExists: Boolean(token),
+    authorization: headers.get("Authorization"),
+  });
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers,
   });
 
-  const result = await response.json();
+  const result: ApiResponse<T> = await response.json();
 
   if (!response.ok) {
     throw new Error(result.message || "Something went wrong");
@@ -49,13 +54,13 @@ export const api = {
   post: <T>(endpoint: string, data?: unknown) =>
     request<T>(endpoint, {
       method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data !== undefined ? JSON.stringify(data) : undefined,
     }),
 
   patch: <T>(endpoint: string, data?: unknown) =>
     request<T>(endpoint, {
       method: "PATCH",
-      body: data ? JSON.stringify(data) : undefined,
+      body: data !== undefined ? JSON.stringify(data) : undefined,
     }),
 
   delete: <T>(endpoint: string) =>

@@ -49,7 +49,6 @@ function BookingForm() {
 
   useEffect(() => {
     if (!serviceId) {
-      setLoading(false);
       return;
     }
 
@@ -431,7 +430,7 @@ function MyBookings() {
               <h2 className="text-xl font-semibold">No bookings yet</h2>
 
               <p className="mt-2 text-slate-400">
-                You haven't booked any services yet.
+                You haven&apos;t booked any services yet.
               </p>
 
               <Link
