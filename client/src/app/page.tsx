@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 import {
   Search,
   Star,
@@ -147,17 +148,12 @@ export default function Home() {
     const fetchHomeData = async () => {
       try {
         setLoadingServices(true);
-        const [catRes, svcRes] = await Promise.all([
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/categories`,
-          ).then((r) => r.json()),
-          fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/services?limit=3`,
-          ).then((r) => r.json()),
+        const [catData, svcData] = await Promise.all([
+          api.get<Category[]>("/categories"),
+          api.get<ServicesResponse>("/services?limit=3"),
         ]);
-        if (catRes.success) setCategories(catRes.data ?? []);
-        if (svcRes.success)
-          setFeaturedServices((svcRes.data as ServicesResponse).data ?? []);
+        setCategories(catData ?? []);
+        setFeaturedServices(svcData.data ?? []);
       } catch {
         // silently fail — homepage degrades gracefully
       } finally {
