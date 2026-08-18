@@ -236,7 +236,7 @@ export default function ProviderBookingsPage() {
                       href={`/bookings/${booking.id}`}
                       className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400 hover:text-cyan-400"
                     >
-                      View Details
+                      View Booking Details
                     </Link>
                   </div>
                 </div>
