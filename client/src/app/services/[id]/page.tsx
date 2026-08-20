@@ -156,7 +156,7 @@ export default function ServiceDetailsPage() {
             href="/services"
             className="flex items-center gap-1 text-sm text-cyan-400 hover:underline"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to listings
+            <ArrowLeft className="h-4 w-4" /> Back to Service listings
           </Link>
           <div className="mt-8 rounded-xl border border-red-500/30 bg-red-500/10 p-8 text-center">
             <h1 className="text-2xl font-bold text-red-400">
