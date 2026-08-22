@@ -17,6 +17,7 @@ import {
   CheckCircle,
   Shield,
 } from "lucide-react";
+import Image from "next/image";
 
 interface Service {
   id: string;
@@ -174,9 +175,9 @@ export default function ServiceDetailsPage() {
   return (
     <main className="min-h-screen bg-slate-950 pb-20 text-white">
       {/* Cover Header Image */}
-      <div className="h-64 md:h-[400px] w-full relative overflow-hidden">
+      <div className="h-64 md:h-400 w-full relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-t from-slate-950 via-slate-950/30 to-transparent z-10" />
-        <img
+        <Image
           src={getCategoryImage(service.category?.slug)}
           alt={service.title}
           className="h-full w-full object-cover object-center relative z-0"
@@ -242,7 +243,7 @@ export default function ServiceDetailsPage() {
 
               {/* Features List */}
               <div className="mt-8 border-t border-slate-800/80 pt-6">
-                <h3 className="text-lg font-bold text-slate-200 mb-3 font-semibold">
+                <h3 className="text-lg font-bold text-slate-200 mb-3">
                   What is included
                 </h3>
                 <ul className="grid gap-2.5 sm:grid-cols-2 text-xs md:text-sm text-slate-400">
